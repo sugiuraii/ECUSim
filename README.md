@@ -3,7 +3,7 @@
  * This sketch can respond OBDII CAN message with using MCP2515 CAN controller board.
 
 # Dependency
- * As for MCP2515 controll library, this depends on [Seeed-Studio/Seeed_Arduino_CAN](https://github.com/Seeed-StudioSeeed_Arduino_CAN).
+ * As for MCP2515 controll library, this depends on [Seeed-Studio/Seeed_Arduino_CAN](https://github.com/Seeed-Studio/Seeed_Arduino_CAN).
 
 # Hardwares need to run the sketch
  * Arduino Uno or its compatilble boards.
