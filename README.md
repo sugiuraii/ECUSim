@@ -8,6 +8,9 @@
 # Hardwares need to run the sketch
  * Arduino Uno or its compatilble boards.
  * MCP2515 CAN controller board.
+ * Connection Arduino <-> MCP2515 board
+    - See https://github.com/autowp/arduino-mcp2515
+    - This sketch does not use interrupt. No need to connect INT and D2 pin.
 
 # Install
  * Before the install, please modify the argument of `CAN.begin(CAN_250KBPS, MCP_8MHZ)` in `CANMessageHandle.ino`, follwoing CAN speed and the frequency of XTAL of MCP2515 board.
