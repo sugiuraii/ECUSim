@@ -9,9 +9,10 @@
  * Arduino Uno or its compatilble boards.
  * MCP2515 CAN controller board.
  * Connection Arduino <-> MCP2515 board
-    - See https://github.com/autowp/arduino-mcp2515
-    - This sketch does not use interrupt. No need to connect INT and D2 pin.
+     - This sketch does not use interrupt. No need to connect INT and D2 pin.
 
+![Wiring](Wiring.svg)
+    
 # Install
  * Before the install, please modify the argument of `CAN.begin(CAN_250KBPS, MCP_8MHZ)` in `CANMessageHandle.ino`, follwoing CAN speed and the frequency of XTAL of MCP2515 board.
  * And please install [Seeed-Studio/Seeed_Arduino_CAN Ver2.2.0](https://github.com/Seeed-Studio/Seeed_Arduino_CAN/archive/refs/tags/v2.2.0.zip) MCP2515 library.
