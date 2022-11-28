@@ -7,7 +7,8 @@
 #include "PIDMap_Definition.h"
 
 // ECU (this controller) CAN ID
-constexpr unsigned long ECU_CAN_ID = 0x7E8;
+constexpr unsigned long ECU_CAN_ID = 0x7E0;
+constexpr unsigned long ECU_CAN_RESPONSE_ID = ECU_CAN_ID + 0x008;
 
 // Debug message serial out switch
 constexpr bool PIDSET_DEBUG = false;

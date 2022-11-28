@@ -92,7 +92,7 @@ void handleCANMessage()
   }
 
   // Send CAN return message.
-  CAN.sendMsgBuf(ECU_CAN_ID, 0, 8, returnBuf);
+  CAN.sendMsgBuf(ECU_CAN_RESPONSE_ID, 0, 8, returnBuf);
 
   if (CANMSG_DEBUG)
   {
