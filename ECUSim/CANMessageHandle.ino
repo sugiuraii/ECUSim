@@ -50,6 +50,15 @@ void handleCANMessage()
     Serial.println(canId, HEX);
   }
 
+  // Ignore query if the ID do not match with this ECU ID (or 0x7DF(send to all ECU))
+  if((canId != 0x7DF) && (canId != ECU_CAN_ID))
+  {
+    if (CANMSG_DEBUG)
+      Serial.println(F("CAM ID do not match with this ECU's ID."));
+    
+    return;
+  }
+
   const uint8_t queryMessageLength = canBuf[0];
   const uint8_t serviceMode = canBuf[1];
   if (queryMessageLength != 2)
@@ -92,7 +101,7 @@ void handleCANMessage()
   }
 
   // Send CAN return message.
-  CAN.sendMsgBuf(ECU_CAN_ID, 0, 8, returnBuf);
+  CAN.sendMsgBuf(ECU_CAN_RESPONSE_ID, 0, 8, returnBuf);
 
   if (CANMSG_DEBUG)
   {
