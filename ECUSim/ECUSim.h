@@ -10,6 +10,9 @@
 constexpr unsigned long ECU_CAN_ID = 0x7E0;
 constexpr unsigned long ECU_CAN_RESPONSE_ID = ECU_CAN_ID + 0x008;
 
+// ECU response(reply wait in ms)
+constexpr int ECU_WAIT = 0; 
+
 // Debug message serial out switch
 constexpr bool PIDSET_DEBUG = false;
 constexpr bool PIDSET_ERROR = true;
