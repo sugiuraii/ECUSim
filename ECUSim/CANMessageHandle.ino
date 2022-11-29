@@ -59,6 +59,10 @@ void handleCANMessage()
     return;
   }
 
+  // Wait time
+  if(ECU_WAIT > 0)
+    delay(ECU_WAIT);
+
   const uint8_t queryMessageLength = canBuf[0];
   const uint8_t serviceMode = canBuf[1];
   if (queryMessageLength != 2)
