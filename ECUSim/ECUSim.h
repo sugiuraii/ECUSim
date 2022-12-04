@@ -17,6 +17,7 @@ constexpr int ECU_WAIT = 0;
 constexpr bool PIDSET_DEBUG = false;
 constexpr bool PIDSET_ERROR = true;
 constexpr bool CANMSG_DEBUG = false;
+constexpr bool CANMSG_TIME_MEAS = false;
 constexpr bool CANMSG_ERROR = true;
 constexpr bool CANMSG_FATAL = true;
 
