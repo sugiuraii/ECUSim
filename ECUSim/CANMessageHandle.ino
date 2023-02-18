@@ -6,10 +6,11 @@ void initializeCAN()
   bool initSucess = false;
   while (!initSucess)
   {
-    if (CAN_OK == CAN.begin(CAN_250KBPS, MCP_8MHz)) // init can bus : baudrate = 250k
+    if (CAN_OK == CAN.begin(MCP_ANY, CAN_250KBPS, MCP_8MHZ)) // init can bus : baudrate = 250k
     {
       Serial.println(F("CAN BUS Shield init ok!"));
       initSucess = true;
+      CAN.setMode(MCP_NORMAL);   
     }
     else
     {
@@ -34,7 +35,7 @@ void handleCANMessage()
   unsigned long canId;
   unsigned char len;
 
-  CAN.readMsgBufID(&canId, &len, canBuf);
+  CAN.readMsgBuf(&canId, &len, canBuf);
 
   if (len > CAN_PAYLOAD_LENGTH)
   {

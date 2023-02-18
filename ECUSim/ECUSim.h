@@ -1,7 +1,8 @@
 #ifndef ECUSIM_H
 #define ECUSIM_H
 
-#include "mcp2515_can.h"
+#include "mcp_can.h"
+#include "mcp_can_dfs.h"
 #include <SPI.h>
 #include <avr/pgmspace.h>
 #include "PIDMap_Definition.h"
@@ -22,7 +23,7 @@ constexpr bool CANMSG_ERROR = true;
 constexpr bool CANMSG_FATAL = true;
 
 extern byte PID_Value_Map[];
-extern mcp2515_can CAN;
+extern MCP_CAN CAN;
 
 constexpr int SERIAL_MSG_LENGTH = 11;
 constexpr int CAN_PAYLOAD_LENGTH = 8;
