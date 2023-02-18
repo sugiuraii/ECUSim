@@ -4,6 +4,8 @@
 
 byte PID_Value_Map[PIDMemSize];
 MCP_CAN CAN(10); // CAN CS: pin 10
+IsoTp isotp(&CAN, 0);
+struct Message_t txMsg, rxMsg;
 
 void setup()
 {

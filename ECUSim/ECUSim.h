@@ -6,6 +6,7 @@
 #include <SPI.h>
 #include <avr/pgmspace.h>
 #include "PIDMap_Definition.h"
+#include <iso-tp.h>
 
 // ECU (this controller) CAN ID
 constexpr unsigned long ECU_CAN_ID = 0x7E0;
@@ -24,6 +25,8 @@ constexpr bool CANMSG_FATAL = true;
 
 extern byte PID_Value_Map[];
 extern MCP_CAN CAN;
+extern IsoTp isotp;
+extern struct Message_t txMsg, rxMsg;
 
 constexpr int SERIAL_MSG_LENGTH = 11;
 constexpr int CAN_PAYLOAD_LENGTH = 8;
