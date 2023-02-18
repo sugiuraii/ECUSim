@@ -1,10 +1,5 @@
 #include "CANMesasgeHandle.h"
-
-int buildPIDValueMessage(byte *returnBuf, uint8_t requestedPID);
-void buildAvailablePIDMessage(byte *returnBuf, uint8_t requestedPID);
-
-constexpr int NOERROR = 0;
-constexpr int PID_NOT_AVAILABLE = -1;
+#include "PIDMessageBuilder.h"
 
 void initializeCAN()
 {
@@ -93,19 +88,17 @@ void handleCANMessage()
 
   // Build up CAN return message
   const uint8_t returnServiceMode = serviceMode + 0x40;
-  byte returnBuf[8] = {0x00, returnServiceMode, requestedPID, 0x00, 0x00, 0x00, 0x00, 0x00};
+  byte returnBuf[8];
+  uint8_t requestedPIDList[1] = {requestedPID};
+  uint8_t returnByteCount;
+  const uint8_t requestedPIDCount = 1;
 
-  if ((requestedPID % 0x20) == 0) // Return supported PID flag mode (=> get data from PIDAvailableFlagMap in PROGMEM)
-    buildAvailablePIDMessage(returnBuf, requestedPID);
-  else // Return value mode (=> get data from PID_Value_Map in RAM)
+  int pidValMessageResult = buildPIDValueMessage(returnBuf, returnByteCount, requestedPIDList, requestedPIDCount, returnServiceMode);
+  if (pidValMessageResult == PID_NOT_AVAILABLE)
   {
-    int pidValMessageResult = buildPIDValueMessage(returnBuf, requestedPID);
-    if (pidValMessageResult == PID_NOT_AVAILABLE)
-    {
-      if (CANMSG_ERROR)
-        Serial.println(F("ERROR: CAN query PID is not supported."));
-      return;
-    }
+    if (CANMSG_ERROR)
+      Serial.println(F("ERROR: CAN query PID is not supported."));
+    return;
   }
 
   // Send CAN return message.
@@ -131,32 +124,4 @@ void handleCANMessage()
         Serial.print(",");
     }
   }
-}
-
-int buildPIDValueMessage(byte *returnBuf, uint8_t requestedPID)
-{
-  const byte valByteLength = pgm_read_byte(PIDByteLengthMap + requestedPID);
-  if (valByteLength == 0)
-    return PID_NOT_AVAILABLE;
-
-  const byte returnByteLength = valByteLength + 2; // PID data length + PIDcode(1byte) + serviceModde(1byte)
-  returnBuf[0] = returnByteLength;
-
-  const unsigned int PIDAddressOffset = pgm_read_word(PIDAddressMap + requestedPID);
-  for (int i = 0; i < valByteLength; i++)
-    returnBuf[i + 3] = PID_Value_Map[PIDAddressOffset + i];
-
-  return NOERROR;
-}
-
-void buildAvailablePIDMessage(byte *returnBuf, uint8_t requestedPID)
-{
-  const byte valByteLength = 4;
-  const byte returnByteLength = valByteLength + 2;
-  int availableMapOffset = (requestedPID / 0x20) * 4;
-  returnBuf[0] = returnByteLength;
-  returnBuf[3] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset);
-  returnBuf[4] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 1);
-  returnBuf[5] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 2);
-  returnBuf[6] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 3);
 }
