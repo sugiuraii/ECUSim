@@ -20,12 +20,14 @@ int buildPIDValueMessage(byte *returnBuf, unsigned int returnBufCount, uint8_t* 
   return NOERROR;
 }
 
-void _buildAvailablePIDMessage(byte *returnBuf, uint8_t requestedPID)
+void _buildAvailablePIDMessage(byte *returnBuf, uint8_t requestedPID, uint8_t returnServiceMode)
 {
   const byte valByteLength = 4;
   const byte returnByteLength = valByteLength + 2;
   int availableMapOffset = (requestedPID / 0x20) * 4;
   returnBuf[0] = returnByteLength;
+  returnBuf[1] = returnServiceMode;
+  returnBuf[2] = requestedPID;
   returnBuf[3] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset);
   returnBuf[4] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 1);
   returnBuf[5] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 2);
