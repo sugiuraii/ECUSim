@@ -31,11 +31,17 @@ void handleCANMessage()
   if (CANMSG_DEBUG)
     Serial.println(F("CAN message handle start."));
 
-  byte canBuf[CAN_PAYLOAD_LENGTH];
+  byte* canBuf;
   unsigned long canId;
   unsigned char len;
 
-  CAN.readMsgBuf(&canId, &len, canBuf);
+  rxMsg.tx_id = tx_can_id;
+  rxMsg.rx_id = rx_can_id;
+  isotp.receive(&rxMsg);
+  len = rxMsg.len;
+  canId = rxMsg.rx_id;
+  canBuf = rxMsg.Buffer;
+  isotp.print_buffer(rxMsg.rx_id, rxMsg.Buffer, rxMsg.len);
 
   if (len > CAN_PAYLOAD_LENGTH)
   {
@@ -103,7 +109,13 @@ void handleCANMessage()
   }
 
   // Send CAN return message.
-  CAN.sendMsgBuf(ECU_CAN_RESPONSE_ID, 0, 8, returnBuf);
+  // send
+  txMsg.len = returnByteCount;
+  txMsg.tx_id = tx_can_id;
+  txMsg.rx_id = rx_can_id;
+  memcpy(txMsg.Buffer,returnBuf,returnByteCount);
+  isotp.send(&txMsg);
+
   if(CANMSG_TIME_MEAS)
     Serial.print(F("CAN message handle time (micros): "));
     Serial.println(micros() - canMsgHandleStartTime);

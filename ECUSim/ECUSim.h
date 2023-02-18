@@ -18,15 +18,18 @@ constexpr int ECU_WAIT = 0;
 // Debug message serial out switch
 constexpr bool PIDSET_DEBUG = false;
 constexpr bool PIDSET_ERROR = true;
-constexpr bool CANMSG_DEBUG = false;
+constexpr bool CANMSG_DEBUG = true;
 constexpr bool CANMSG_TIME_MEAS = false;
 constexpr bool CANMSG_ERROR = true;
 constexpr bool CANMSG_FATAL = true;
 
 extern byte PID_Value_Map[];
 extern MCP_CAN CAN;
+
 extern IsoTp isotp;
 extern struct Message_t txMsg, rxMsg;
+extern INT32U tx_can_id;
+extern INT32U rx_can_id;
 
 constexpr int SERIAL_MSG_LENGTH = 11;
 constexpr int CAN_PAYLOAD_LENGTH = 8;
