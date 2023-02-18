@@ -1,6 +1,8 @@
-int buildPIDValueMessage(byte *returnBuf, unsigned int returnBufCount, uint8_t* requestedPIDList, uint8_t requestedPIDCount)
+int buildPIDValueMessage(byte *returnBuf, uint8_t& returnByteCount, uint8_t* requestedPIDList, const uint8_t requestedPIDCount, const uint8_t returnServiceMode)
 {
-    
+  returnBuf[1] = returnServiceMode;
+  uint8_t byteOffset = 2;
+
   for(uint8_t i = 0; i < requestedPIDCount; i++)
   {
     uint8_t requestedPID = requestedPIDList[i];
@@ -20,11 +22,11 @@ int buildPIDValueMessage(byte *returnBuf, unsigned int returnBufCount, uint8_t* 
   return NOERROR;
 }
 
-void _buildAvailablePIDMessage(byte *returnBuf, uint8_t requestedPID, uint8_t returnServiceMode)
+void _buildAvailablePIDMessage(byte *returnBuf, const uint8_t requestedPID, const uint8_t returnServiceMode)
 {
   const byte valByteLength = 4;
   const byte returnByteLength = valByteLength + 2;
-  int availableMapOffset = (requestedPID / 0x20) * 4;
+  const int availableMapOffset = (requestedPID / 0x20) * 4;
   returnBuf[0] = returnByteLength;
   returnBuf[1] = returnServiceMode;
   returnBuf[2] = requestedPID;
