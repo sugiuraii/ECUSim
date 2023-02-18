@@ -34,16 +34,12 @@ int  buildPIDValueMessage(byte* const returnBuf, uint8_t& returnByteCount, const
     return NOERROR;
 }
 
-void _buildAvailablePIDMessage(byte *returnBuf, const uint8_t requestedPID, const uint8_t returnServiceMode)
+void fillAvailablePIDBytes(byte* const returnBuf, const uint8_t requestedPID, const uint8_t byteOffsetToFill, uint8_t& byteOffsetAfterFill)
 {
-  const byte valByteLength = 4;
-  const byte returnByteLength = valByteLength + 2;
   const int availableMapOffset = (requestedPID / 0x20) * 4;
-  returnBuf[0] = returnByteLength;
-  returnBuf[1] = returnServiceMode;
-  returnBuf[2] = requestedPID;
-  returnBuf[3] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset);
-  returnBuf[4] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 1);
-  returnBuf[5] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 2);
-  returnBuf[6] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 3);
+  returnBuf[byteOffsetToFill] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset);
+  returnBuf[byteOffsetToFill + 1] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 1);
+  returnBuf[byteOffsetToFill + 2] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 2);
+  returnBuf[byteOffsetToFill + 3] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 3);
+  byteOffsetAfterFill = byteOffsetToFill + 4;
 }
