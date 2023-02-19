@@ -5,6 +5,9 @@ IsoTp isotp(&CAN, 0);
 struct Message_t txMsg;
 //struct Message_t rxMsg;  // Not used (not use iso tp in receive.)
 
+constexpr int RETURM_MSGBUILD_BUF_LENGTH = 128;
+constexpr int PID_LIST_LENGTH = 6;
+
 void initializeCAN()
 {
   bool initSucess = false;
@@ -92,7 +95,7 @@ void handleCANMessage()
   }
 
   // Get query PID codes
-  uint8_t requestedPIDList[6];
+  uint8_t requestedPIDList[PID_LIST_LENGTH];
   const uint8_t requestedPIDCount = queryMessageLength - 1; // Exclude service mode from query length
   for(uint8_t i = 0; i < requestedPIDCount; i++)
     requestedPIDList[i] = canBuf[i + 2];
@@ -112,7 +115,7 @@ void handleCANMessage()
 
   // Build up CAN return message
   const uint8_t returnServiceMode = serviceMode + 0x40;
-  byte returnBuf[64];
+  byte returnBuf[RETURM_MSGBUILD_BUF_LENGTH];
   uint8_t returnByteCount;
 
   int pidValMessageResult = buildPIDValueMessage(returnBuf, returnByteCount, requestedPIDList, requestedPIDCount, returnServiceMode);
