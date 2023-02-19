@@ -5,7 +5,7 @@ IsoTp isotp(&CAN, 0);
 struct Message_t txMsg;
 //struct Message_t rxMsg;  // Not used (not use iso tp in receive.)
 
-constexpr int RETURM_MSGBUILD_BUF_LENGTH = 128;
+constexpr int RETURN_MSGBUILD_BUF_LENGTH = 128;
 constexpr int PID_LIST_LENGTH = 6;
 
 void initializeCAN()
@@ -43,11 +43,11 @@ void handleCANMessage()
   if (CANMSG_DEBUG)
     Serial.println(F("CAN message handle start."));
 
-  byte canBuf[CAN_PAYLOAD_LENGTH];
+  byte receivedCANBuf[CAN_PAYLOAD_LENGTH];
   unsigned long canId;
   unsigned char len;
 
-  CAN.readMsgBuf(&canId, &len, canBuf);
+  CAN.readMsgBuf(&canId, &len, receivedCANBuf);
 
   if (len > CAN_PAYLOAD_LENGTH)
   {
@@ -76,8 +76,8 @@ void handleCANMessage()
     delay(ECU_WAIT);
 
   // Get query message length and check service mode.
-  const uint8_t queryMessageLength = canBuf[0];
-  const uint8_t serviceMode = canBuf[1];
+  const uint8_t queryMessageLength = receivedCANBuf[0];
+  const uint8_t serviceMode = receivedCANBuf[1];
   if (serviceMode != 0x01)
   {
     if (CANMSG_ERROR)
@@ -98,7 +98,7 @@ void handleCANMessage()
   uint8_t requestedPIDList[PID_LIST_LENGTH];
   const uint8_t requestedPIDCount = queryMessageLength - 1; // Exclude service mode from query length
   for(uint8_t i = 0; i < requestedPIDCount; i++)
-    requestedPIDList[i] = canBuf[i + 2];
+    requestedPIDList[i] = receivedCANBuf[i + 2];
 
   if (CANMSG_DEBUG)
   {
@@ -115,10 +115,10 @@ void handleCANMessage()
 
   // Build up CAN return message
   const uint8_t returnServiceMode = serviceMode + 0x40;
-  byte returnBuf[RETURM_MSGBUILD_BUF_LENGTH];
+  byte returnMessageBuf[RETURN_MSGBUILD_BUF_LENGTH];
   uint8_t returnByteCount;
 
-  int pidValMessageResult = buildPIDValueMessage(returnBuf, returnByteCount, requestedPIDList, requestedPIDCount, returnServiceMode);
+  int pidValMessageResult = buildPIDValueMessage(returnMessageBuf, returnByteCount, requestedPIDList, requestedPIDCount, returnServiceMode);
   if (pidValMessageResult == PID_NOT_AVAILABLE)
   {
     if (CANMSG_ERROR)
@@ -131,7 +131,7 @@ void handleCANMessage()
   txMsg.len = returnByteCount;
   txMsg.rx_id = ECU_CAN_ID;
   txMsg.tx_id = ECU_CAN_RESPONSE_ID;
-  memcpy(txMsg.Buffer,returnBuf,returnByteCount);
+  memcpy(txMsg.Buffer,returnMessageBuf,returnByteCount);
   isotp.send(&txMsg);
 
   if(CANMSG_TIME_MEAS)
@@ -144,7 +144,7 @@ void handleCANMessage()
     Serial.print(F("Return. Value (with padding): "));
     for (int i = 0; i < returnByteCount; i++)
     {
-      Serial.print(returnBuf[i], HEX);
+      Serial.print(returnMessageBuf[i], HEX);
       if (i == returnByteCount - 1)
         Serial.println();
       else
