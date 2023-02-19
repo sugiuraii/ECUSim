@@ -130,8 +130,10 @@ void handleCANMessage()
   isotp.send(&txMsg);
 
   if(CANMSG_TIME_MEAS)
+  {
     Serial.print(F("CAN message handle time (micros): "));
     Serial.println(micros() - canMsgHandleStartTime);
+  }
   if (CANMSG_DEBUG)
   {
     Serial.print(F("Return. Value (with padding): "));
