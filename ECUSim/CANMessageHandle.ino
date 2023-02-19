@@ -1,5 +1,6 @@
 #include "CANMesasgeHandle.h"
 #include "PIDMessageBuilder.h"
+#include "AVRFreeRAM.h"
 
 IsoTp isotp(&CAN, 0);
 struct Message_t txMsg;
@@ -151,4 +152,6 @@ void handleCANMessage()
         Serial.print(",");
     }
   }
+  if(CANMSG_FREERAM_MEAS)
+    display_freeram();
 }
