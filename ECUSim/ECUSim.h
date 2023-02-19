@@ -29,5 +29,4 @@ extern MCP_CAN CAN;
 constexpr int SERIAL_MSG_LENGTH = 11;
 constexpr int CAN_PAYLOAD_LENGTH = 8;
 
-
 #endif

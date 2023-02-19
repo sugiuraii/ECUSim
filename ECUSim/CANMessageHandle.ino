@@ -2,7 +2,8 @@
 #include "PIDMessageBuilder.h"
 
 IsoTp isotp(&CAN, 0);
-struct Message_t txMsg, rxMsg;
+struct Message_t txMsg;
+//struct Message_t rxMsg;  // Not used (not use iso tp in receive.)
 
 void initializeCAN()
 {
@@ -26,7 +27,8 @@ void initializeCAN()
 
   // buffers
   txMsg.Buffer = (uint8_t *)calloc(MAX_MSGBUF, sizeof(uint8_t));
-  rxMsg.Buffer = (uint8_t *)calloc(MAX_MSGBUF, sizeof(uint8_t));
+  // Not used (not use iso tp in receive.)
+  //rxMsg.Buffer = (uint8_t *)calloc(MAX_MSGBUF, sizeof(uint8_t));
 }
 
 void handleCANMessage()
@@ -124,8 +126,8 @@ void handleCANMessage()
   // Send CAN return message.
   // send
   txMsg.len = returnByteCount;
-  txMsg.tx_id = rx_can_id;
-  txMsg.rx_id = tx_can_id;
+  txMsg.rx_id = ECU_CAN_ID;
+  txMsg.tx_id = ECU_CAN_RESPONSE_ID;
   memcpy(txMsg.Buffer,returnBuf,returnByteCount);
   isotp.send(&txMsg);
 
