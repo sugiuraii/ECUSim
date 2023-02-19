@@ -8,6 +8,7 @@ MCP_CAN CAN(10); // CAN CS: pin 10
 void setup()
 {
   Serial.begin(115200);
+  Serial.println(F("------------------- Arduino setup start ---------------------------"));
   initializePIDValueMap();
   initializeCAN();
 }
