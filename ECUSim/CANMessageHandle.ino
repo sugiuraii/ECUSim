@@ -132,8 +132,16 @@ void handleCANMessage()
   txMsg.len = returnByteCount;
   txMsg.rx_id = ECU_CAN_ID;
   txMsg.tx_id = ECU_CAN_RESPONSE_ID;
+  // isotp.send() changes (increments) the address of txMsg.Buffer pointer inside the function (!!!)
+  // Therefore, the initial address of txMsg.Buffer needs to be stored before processing in send() 
+  // (or, it might be better to copy the pointer of returnMessageBuf to txMsg.Buffer), instead of cal memcpy)
+  // txMsg.Buffer = returnMessageBuf;
+  // (in this case, calloc of setup() can be eliminated.)
   memcpy(txMsg.Buffer,returnMessageBuf,returnByteCount);
+  uint8_t* txMsg_Buffer_origin = txMsg.Buffer;
   isotp.send(&txMsg);
+  // Revert tsMsg.Buffer to original address.
+  txMsg.Buffer = txMsg_Buffer_origin;
 
   if(CANMSG_TIME_MEAS)
   {
@@ -152,6 +160,7 @@ void handleCANMessage()
         Serial.print(",");
     }
   }
+
   if(CANMSG_FREERAM_MEAS)
     display_freeram();
 }
