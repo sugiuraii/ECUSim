@@ -31,17 +31,11 @@ void handleCANMessage()
   if (CANMSG_DEBUG)
     Serial.println(F("CAN message handle start."));
 
-  byte* canBuf;
+  byte canBuf[CAN_PAYLOAD_LENGTH];
   unsigned long canId;
   unsigned char len;
 
-  rxMsg.tx_id = tx_can_id;
-  rxMsg.rx_id = rx_can_id;
-  isotp.receive(&rxMsg);
-  len = rxMsg.len;
-  canId = rxMsg.rx_id;
-  canBuf = rxMsg.Buffer;
-  isotp.print_buffer(rxMsg.rx_id, rxMsg.Buffer, rxMsg.len);
+  CAN.readMsgBuf(&canId, &len, canBuf);
 
   if (len > CAN_PAYLOAD_LENGTH)
   {
