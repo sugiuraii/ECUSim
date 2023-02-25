@@ -25,8 +25,9 @@
 
 # Features
  * [x] Sends value back on PID request of service 0x01
- * [x] Control PID sensor values via serial port
- * [ ] Responds ECU ID
+ * [x] Control PID sensor values by serial port (using PC GUI program)
+ * [X] Responds ECU ID
+ * [X] Responds 6PIDS request by single message (J1939)
 
 # Control PID sensor values via serial port
 After the CAN initialization (Serial message by "CAN BUS Shield init ok!"), the arduino board wait PID sensor value update message on seial port.
