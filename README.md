@@ -6,7 +6,8 @@
 ![Demo](https://user-images.githubusercontent.com/25734871/113512905-e5a4fb00-95a1-11eb-9434-9f92c7a85266.gif)
 
 # Dependency
- * As for MCP2515 controll library, this depends on [Seeed-Studio/Seeed_Arduino_CAN](https://github.com/Seeed-Studio/Seeed_Arduino_CAN).
+* As for MCP2515 controll library, this depends on [coryjfowler/MCP_CAN_lib](https://github.com/coryjfowler/MCP_CAN_lib).
+* ISO-TP library [altelch/iso-tp](https://github.com/altelch/iso-tp) is also used. 
 
 # Hardwares need to run the sketch
  * Arduino Uno or its compatilble boards.
@@ -18,14 +19,15 @@
     
 # Install
  * Before the install, please modify the argument of `CAN.begin(CAN_250KBPS, MCP_8MHZ)` in `CANMessageHandle.ino`, follwoing CAN speed and the frequency of XTAL of MCP2515 board.
- * And please install [Seeed-Studio/Seeed_Arduino_CAN Ver2.2.0](https://github.com/Seeed-Studio/Seeed_Arduino_CAN/archive/refs/tags/v2.2.0.zip) MCP2515 library.
-    * Install zip library file on ArduinoIDE, or copy all of the contents of `src` directory (at the library zip file) to `ECUSim` directory. 
+ * And please install[coryjfowler/MCP_CAN_lib](https://github.com/coryjfowler/MCP_CAN_lib) MCP2515 library and [altelch/iso-tp](https://github.com/altelch/iso-tp) ISO-TP library.
+    * Get zip file of repository and install on Arduino IDE. 
  * After setting the parameter above, compile `ECUSim.ino` and flash to arduino board.
 
 # Features
  * [x] Sends value back on PID request of service 0x01
- * [x] Control PID sensor values via serial port
- * [ ] Responds ECU ID
+ * [x] Control PID sensor values by serial port (using PC GUI program)
+ * [X] Responds ECU ID
+ * [X] Responds 6PIDS request by single message (J1939)
 
 # Control PID sensor values via serial port
 After the CAN initialization (Serial message by "CAN BUS Shield init ok!"), the arduino board wait PID sensor value update message on seial port.

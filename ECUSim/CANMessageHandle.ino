@@ -1,20 +1,24 @@
 #include "CANMesasgeHandle.h"
+#include "PIDMessageBuilder.h"
+#include "AVRFreeRAM.h"
 
-int buildPIDValueMessage(byte *returnBuf, uint8_t requestedPID);
-void buildAvailablePIDMessage(byte *returnBuf, uint8_t requestedPID);
+IsoTp isotp(&CAN, 0);
+struct Message_t txMsg;
+//struct Message_t rxMsg;  // Not used (not use iso tp in receive.)
 
-constexpr int NOERROR = 0;
-constexpr int PID_NOT_AVAILABLE = -1;
+constexpr int RETURN_MSGBUILD_BUF_LENGTH = 128;
+constexpr int PID_LIST_LENGTH = 6;
 
 void initializeCAN()
 {
   bool initSucess = false;
   while (!initSucess)
   {
-    if (CAN_OK == CAN.begin(CAN_250KBPS, MCP_8MHz)) // init can bus : baudrate = 250k
+    if (CAN_OK == CAN.begin(MCP_ANY, CAN_250KBPS, MCP_8MHZ)) // init can bus : baudrate = 250k
     {
       Serial.println(F("CAN BUS Shield init ok!"));
       initSucess = true;
+      CAN.setMode(MCP_NORMAL);   
     }
     else
     {
@@ -24,6 +28,11 @@ void initializeCAN()
       initSucess = false;
     }
   }
+
+  // buffers
+  txMsg.Buffer = (uint8_t *)calloc(MAX_MSGBUF, sizeof(uint8_t));
+  // Not used (not use iso tp in receive.)
+  //rxMsg.Buffer = (uint8_t *)calloc(MAX_MSGBUF, sizeof(uint8_t));
 }
 
 void handleCANMessage()
@@ -35,11 +44,11 @@ void handleCANMessage()
   if (CANMSG_DEBUG)
     Serial.println(F("CAN message handle start."));
 
-  byte canBuf[CAN_PAYLOAD_LENGTH];
+  byte receivedCANBuf[CAN_PAYLOAD_LENGTH];
   unsigned long canId;
   unsigned char len;
 
-  CAN.readMsgBufID(&canId, &len, canBuf);
+  CAN.readMsgBuf(&canId, &len, receivedCANBuf);
 
   if (len > CAN_PAYLOAD_LENGTH)
   {
@@ -67,15 +76,9 @@ void handleCANMessage()
   if(ECU_WAIT > 0)
     delay(ECU_WAIT);
 
-  const uint8_t queryMessageLength = canBuf[0];
-  const uint8_t serviceMode = canBuf[1];
-  if (queryMessageLength != 2)
-  {
-    if (CANMSG_ERROR)
-      Serial.println(F("ERROR: CAN query message byte length is not 2."));
-
-    return;
-  }
+  // Get query message length and check service mode.
+  const uint8_t queryMessageLength = receivedCANBuf[0];
+  const uint8_t serviceMode = receivedCANBuf[1];
   if (serviceMode != 0x01)
   {
     if (CANMSG_ERROR)
@@ -84,79 +87,80 @@ void handleCANMessage()
     return;
   }
 
-  const uint8_t requestedPID = canBuf[2];
+  if(queryMessageLength < 2 || queryMessageLength > 7)
+  {
+    if (CANMSG_ERROR)
+      Serial.println(F("ERROR: CAN query message length needs to be between 2 and 7 (1 to 6 PIDs)."));
+
+    return;
+  }
+
+  // Get query PID codes
+  uint8_t requestedPIDList[PID_LIST_LENGTH];
+  const uint8_t requestedPIDCount = queryMessageLength - 1; // Exclude service mode from query length
+  for(uint8_t i = 0; i < requestedPIDCount; i++)
+    requestedPIDList[i] = receivedCANBuf[i + 2];
+
   if (CANMSG_DEBUG)
   {
     Serial.print(F("PID query: "));
-    Serial.println(requestedPID, HEX);
+    for(uint8_t i = 0; i < requestedPIDCount; i++)
+    {
+      Serial.print(requestedPIDList[i], HEX);
+      if(i == requestedPIDCount - 1)
+        Serial.println();
+      else
+        Serial.print(F(","));
+    }
   }
 
   // Build up CAN return message
   const uint8_t returnServiceMode = serviceMode + 0x40;
-  byte returnBuf[8] = {0x00, returnServiceMode, requestedPID, 0x00, 0x00, 0x00, 0x00, 0x00};
+  byte returnMessageBuf[RETURN_MSGBUILD_BUF_LENGTH];
+  uint8_t returnByteCount;
 
-  if ((requestedPID % 0x20) == 0) // Return supported PID flag mode (=> get data from PIDAvailableFlagMap in PROGMEM)
-    buildAvailablePIDMessage(returnBuf, requestedPID);
-  else // Return value mode (=> get data from PID_Value_Map in RAM)
+  int pidValMessageResult = buildPIDValueMessage(returnMessageBuf, returnByteCount, requestedPIDList, requestedPIDCount, returnServiceMode);
+  if (pidValMessageResult == PID_NOT_AVAILABLE)
   {
-    int pidValMessageResult = buildPIDValueMessage(returnBuf, requestedPID);
-    if (pidValMessageResult == PID_NOT_AVAILABLE)
-    {
-      if (CANMSG_ERROR)
-        Serial.println(F("ERROR: CAN query PID is not supported."));
-      return;
-    }
+    if (CANMSG_ERROR)
+      Serial.println(F("ERROR: CAN query PID is not supported."));
+    return;
   }
 
   // Send CAN return message.
-  CAN.sendMsgBuf(ECU_CAN_RESPONSE_ID, 0, 8, returnBuf);
+  // send
+  txMsg.len = returnByteCount;
+  txMsg.rx_id = ECU_CAN_ID;
+  txMsg.tx_id = ECU_CAN_RESPONSE_ID;
+  // isotp.send() changes (increments) the address of txMsg.Buffer pointer inside the function (!!!)
+  // Therefore, the initial address of txMsg.Buffer needs to be stored before processing in send() 
+  // (or, it might be better to copy the pointer of returnMessageBuf to txMsg.Buffer), instead of cal memcpy)
+  // txMsg.Buffer = returnMessageBuf;
+  // (in this case, calloc of setup() can be eliminated.)
+  memcpy(txMsg.Buffer,returnMessageBuf,returnByteCount);
+  uint8_t* txMsg_Buffer_origin = txMsg.Buffer;
+  isotp.send(&txMsg);
+  // Revert tsMsg.Buffer to original address.
+  txMsg.Buffer = txMsg_Buffer_origin;
+
   if(CANMSG_TIME_MEAS)
+  {
     Serial.print(F("CAN message handle time (micros): "));
     Serial.println(micros() - canMsgHandleStartTime);
+  }
   if (CANMSG_DEBUG)
   {
-    Serial.print(F("Return byte length: "));
-    Serial.println(returnBuf[0], DEC);
-    Serial.print(F("Return service mode: "));
-    Serial.println(returnBuf[1], HEX);
-    Serial.print(F("Return PID: "));
-    Serial.println(returnBuf[2], HEX);
     Serial.print(F("Return. Value (with padding): "));
-    for (int i = 3; i < 8; i++)
+    for (int i = 0; i < returnByteCount; i++)
     {
-      Serial.print(returnBuf[i], HEX);
-      if (i == 7)
+      Serial.print(returnMessageBuf[i], HEX);
+      if (i == returnByteCount - 1)
         Serial.println();
       else
         Serial.print(",");
     }
   }
-}
 
-int buildPIDValueMessage(byte *returnBuf, uint8_t requestedPID)
-{
-  const byte valByteLength = pgm_read_byte(PIDByteLengthMap + requestedPID);
-  if (valByteLength == 0)
-    return PID_NOT_AVAILABLE;
-
-  const byte returnByteLength = valByteLength + 2; // PID data length + PIDcode(1byte) + serviceModde(1byte)
-  returnBuf[0] = returnByteLength;
-
-  const unsigned int PIDAddressOffset = pgm_read_word(PIDAddressMap + requestedPID);
-  for (int i = 0; i < valByteLength; i++)
-    returnBuf[i + 3] = PID_Value_Map[PIDAddressOffset + i];
-
-  return NOERROR;
-}
-
-void buildAvailablePIDMessage(byte *returnBuf, uint8_t requestedPID)
-{
-  const byte valByteLength = 4;
-  const byte returnByteLength = valByteLength + 2;
-  int availableMapOffset = (requestedPID / 0x20) * 4;
-  returnBuf[0] = returnByteLength;
-  returnBuf[3] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset);
-  returnBuf[4] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 1);
-  returnBuf[5] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 2);
-  returnBuf[6] = pgm_read_byte(PIDAvailableFlagMap + availableMapOffset + 3);
+  if(CANMSG_FREERAM_MEAS)
+    display_freeram();
 }
