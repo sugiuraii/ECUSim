@@ -5,8 +5,8 @@ void fillAvailablePIDBytes(byte* const returnBuf, const uint8_t requestedPID, co
 
 int  buildPIDValueMessage(byte* const returnBuf, uint8_t& returnByteCount, const uint8_t* requestedPIDList, const uint8_t requestedPIDCount, const uint8_t returnServiceMode)
 {
-  returnBuf[1] = returnServiceMode;
-  uint8_t byteOffset = 2;
+  returnBuf[0] = returnServiceMode;
+  uint8_t byteOffset = 1;
 
   for(uint8_t i = 0; i < requestedPIDCount; i++)
   {
@@ -19,7 +19,6 @@ int  buildPIDValueMessage(byte* const returnBuf, uint8_t& returnByteCount, const
   
   // Finally, set returnByteCount
   returnByteCount = byteOffset;
-  returnBuf[0] = returnByteCount - 1; // Except for first length byte
 
   // Check, at least one PID is available or not
   if(byteOffset == 2) // Offset is not changed
