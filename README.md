@@ -23,6 +23,10 @@
     * Get zip file of repository and install on Arduino IDE. 
  * After setting the parameter above, compile `ECUSim.ino` and flash to arduino board.
 
+# GUI fronend
+- GUI frontend is available on [sugiuraii/ECUSimGUI](https://github.com/sugiuraii/ECUSimGUI).
+- You can control PID sensor value by GUI fronted, by using the program above.
+
 # Features
  * [x] Sends value back on PID request of service 0x01
  * [x] Control PID sensor values by serial port (using PC GUI program)
@@ -41,9 +45,6 @@ The update serial scommand consists with 10 character and LF(\n).
 - Set PID 0x0C(= Engine speed rpm) to 5745rpm (22980 in decimal, 0x59C4 in hexadecimal)
     - -> Send "0C59C40000\n" via serial port (latter 2 bytes are ignored.)
 - Note that PIDs of "Supported PID" (such as 0x00, 0x20, 0x40, 0x60, 0x80, 0xA0, 0xC0 and 0xE0) are automatically calculated on compling the sketch. You don't have to set by serial port command. 
-## GUI fronend
-- GUI frontend is available on [sugiuraii/ECUSimGUI](https://github.com/sugiuraii/ECUSimGUI).
-- You can control PID sensor value by GUI fronted, by using the program above.
 
 # Enable/disable debug message
 You can enable/disable error or debug message on `ECUSim.h`.
