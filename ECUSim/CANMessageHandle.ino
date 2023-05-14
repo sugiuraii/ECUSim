@@ -50,10 +50,22 @@ void handleCANMessage()
 
     return;
   }
+  
   if (CANMSG_DEBUG)
   {
     Serial.print(F("Msg from canId: "));
-    Serial.println(canId, HEX);
+    Serial.print(canId, HEX);
+    Serial.print(F(" Msg length: "));
+    Serial.print(len);
+    Serial.print(F(" Msg content: "));
+    for(int i = 0; i < CAN_PAYLOAD_LENGTH; i++)
+    {
+      Serial.print(receivedCANBuf[i], HEX);
+      if (i == CAN_PAYLOAD_LENGTH - 1)
+        Serial.println();
+      else
+        Serial.print(",");
+    }
   }
 
   // Ignore query if the ID do not match with this ECU ID (or 0x7DF(send to all ECU))
