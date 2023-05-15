@@ -40,8 +40,9 @@ void handleCANMessage()
   byte receivedCANBuf[CAN_PAYLOAD_LENGTH];
   unsigned long canId;
   unsigned char len;
+  uint8_t recvResult;
 
-  CAN.readMsgBuf(&canId, &len, receivedCANBuf);
+  recvResult = CAN.readMsgBuf(&canId, &len, receivedCANBuf);
 
   if (len > CAN_PAYLOAD_LENGTH)
   {
@@ -53,6 +54,8 @@ void handleCANMessage()
   
   if (CANMSG_DEBUG)
   {
+    Serial.print(F("MCP read result code: "));
+    Serial.println(recvResult);
     Serial.print(F("Msg from canId: "));
     Serial.print(canId, HEX);
     Serial.print(F(" Msg length: "));
@@ -134,11 +137,12 @@ void handleCANMessage()
 
   // Send CAN return message.
   struct Message_t txMsg;
+  uint8_t sendResult;
   txMsg.len = returnByteCount;
   txMsg.rx_id = ECU_CAN_ID;
   txMsg.tx_id = ECU_CAN_RESPONSE_ID;
   txMsg.Buffer = returnMessageBuf;
-  isotp.send(&txMsg);
+  sendResult = isotp.send(&txMsg);
 
   if(CANMSG_TIME_MEAS)
   {
@@ -156,6 +160,9 @@ void handleCANMessage()
       else
         Serial.print(",");
     }
+
+    Serial.print(F("MCP send result code :"));
+    Serial.println(sendResult);
   }
 
   if(CANMSG_FREERAM_MEAS)
