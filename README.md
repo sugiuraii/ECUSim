@@ -10,10 +10,10 @@
 * ISO-TP library [altelch/iso-tp](https://github.com/altelch/iso-tp) is also used. 
 
 # Hardwares need to run the sketch
- * Arduino Uno or its compatilble boards.
+ * Arduino Uno or its compatible boards.
  * MCP2515 CAN controller board.
  * Connection Arduino <-> MCP2515 board
-     - This sketch does not use interrupt. No need to connect INT and D2 pin.
+     - This sketch does not use interrupt so need to connect INT and D2 pin.
 
 ![Wiring](Wiring.svg)
     
