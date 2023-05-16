@@ -51,7 +51,15 @@ void handleCANMessage()
 
     return;
   }
-  
+
+  if(CANMSG_ERROR)
+  {
+    if(recvResult != CAN_OK) {
+      Serial.print(F("ERROR: CAN message receive is failed. Return of readMsgBuf : "));
+      Serial.println(recvResult);
+    }
+  }
+
   if (CANMSG_DEBUG)
   {
     Serial.print(F("MCP read result code: "));
@@ -143,6 +151,14 @@ void handleCANMessage()
   txMsg.tx_id = ECU_CAN_RESPONSE_ID;
   txMsg.Buffer = returnMessageBuf;
   sendResult = isotp.send(&txMsg);
+
+  if(CANMSG_ERROR)
+  {
+    if(sendResult != CAN_OK) {
+      Serial.print(F("ERROR: CAN message send is failed. Return of sendMsg : "));
+      Serial.println(sendResult);
+    }
+  }
 
   if(CANMSG_TIME_MEAS)
   {
